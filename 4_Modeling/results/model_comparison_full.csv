@@ -1,0 +1,9 @@
+Model,Feature Set,Test Accuracy,Test F1 (weighted),Test F1 (macro),CV F1m (mean),CV F1m (std)
+Majority Class,Baseline,0.3333333333333333,0.16666666666666666,0.16666666666666666,,
+Stratified Random,Baseline,0.3333333333333333,0.3149824032176973,0.3149824032176973,,
+Logistic Regression,Behavioral Only,0.4286,0.43,0.43,0.4712,0.1761
+Random Forest,Behavioral Only,0.4286,0.4184,0.4184,0.4537,0.0973
+XGBoost,Behavioral Only,0.5714,0.5702,0.5702,0.4744,0.1216
+Logistic Regression,Behavioral + Demographic,0.4286,0.4232,0.4232,0.4548,0.1648
+Random Forest,Behavioral + Demographic,0.4762,0.4702,0.4702,0.4403,0.088
+XGBoost,Behavioral + Demographic,0.5238,0.5289,0.5289,0.3123,0.1354

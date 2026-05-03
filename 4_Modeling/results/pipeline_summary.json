@@ -1,0 +1,220 @@
+{
+  "best_model": "XGBoost",
+  "best_params": {
+    "n_estimators": 200,
+    "max_depth": 3,
+    "learning_rate": 0.1,
+    "subsample": 0.8
+  },
+  "n_behavioral": 15,
+  "n_demographic": 14,
+  "n_total": 29,
+  "demographic_features": [
+    "age_ordinal",
+    "education_ordinal",
+    "income_ordinal",
+    "gender_binary",
+    "smartphone_binary",
+    "household_size",
+    "prof_Retired",
+    "prof_Self-Employed",
+    "prof_Student",
+    "prof_Unemployed",
+    "geo_Suburban",
+    "geo_Urban",
+    "use_Business",
+    "use_Personal"
+  ],
+  "classes": [
+    "High",
+    "Low",
+    "Medium"
+  ],
+  "baselines": {
+    "Majority Class": {
+      "accuracy": 0.3333333333333333,
+      "f1_weighted": 0.16666666666666666,
+      "f1_macro": 0.16666666666666666
+    },
+    "Stratified Random": {
+      "accuracy": 0.3333333333333333,
+      "f1_weighted": 0.3149824032176973,
+      "f1_macro": 0.3149824032176973
+    }
+  },
+  "impact": {
+    "Logistic Regression": {
+      "before": 0.43,
+      "after": 0.4232,
+      "delta": -0.0068
+    },
+    "Random Forest": {
+      "before": 0.4184,
+      "after": 0.4702,
+      "delta": 0.0518
+    },
+    "XGBoost": {
+      "before": 0.5702,
+      "after": 0.5289,
+      "delta": -0.0413
+    }
+  },
+  "error_analysis": {
+    "correct": 11,
+    "total": 21,
+    "pct": 52.4
+  },
+  "xgb_top10": {
+    "pct_depot": 0.1035,
+    "pct_transfert": 0.055,
+    "avg_sr_ratio": 0.0515,
+    "mean_amount": 0.0505,
+    "prof_Unemployed": 0.0461,
+    "prof_Self-Employed": 0.0454,
+    "education_ordinal": 0.0436,
+    "median_amount": 0.04,
+    "geo_Urban": 0.0398,
+    "pct_airtime": 0.0398
+  },
+  "rf_top10": {
+    "avg_hour": 0.0794,
+    "avg_sr_ratio": 0.0752,
+    "pct_out": 0.0639,
+    "std_amount": 0.0591,
+    "std_hour": 0.057,
+    "mean_amount": 0.056,
+    "avg_balance": 0.0548,
+    "pct_retrait": 0.0546,
+    "pct_transfert": 0.0525,
+    "median_amount": 0.0516
+  },
+  "results": {
+    "Logistic Regression": {
+      "uses_scaler": true,
+      "best_params": {
+        "C": 1,
+        "solver": "lbfgs"
+      },
+      "cv_accuracy": 0.48,
+      "cv_accuracy_std": 0.13723909028128453,
+      "cv_f1w": 0.4642698412698413,
+      "cv_f1w_std": 0.15828986872090878,
+      "cv_f1m": 0.45476190476190465,
+      "cv_f1m_std": 0.16481511206203497,
+      "test_accuracy": 0.42857142857142855,
+      "test_f1w": 0.4232064232064232,
+      "test_f1m": 0.4232064232064232,
+      "test_precision": 0.45454545454545453,
+      "test_recall": 0.42857142857142855,
+      "y_pred": [
+        2,
+        0,
+        2,
+        1,
+        1,
+        1,
+        0,
+        1,
+        2,
+        0,
+        2,
+        2,
+        1,
+        2,
+        1,
+        2,
+        2,
+        0,
+        2,
+        2,
+        2
+      ]
+    },
+    "Random Forest": {
+      "uses_scaler": false,
+      "best_params": {
+        "n_estimators": 200,
+        "max_depth": 5,
+        "min_samples_split": 2,
+        "min_samples_leaf": 1
+      },
+      "cv_accuracy": 0.47777777777777775,
+      "cv_accuracy_std": 0.06885303726590963,
+      "cv_f1w": 0.4556017316017316,
+      "cv_f1w_std": 0.08916913077198697,
+      "cv_f1m": 0.4403463203463203,
+      "cv_f1m_std": 0.08799278450767486,
+      "test_accuracy": 0.47619047619047616,
+      "test_f1w": 0.47023809523809523,
+      "test_f1m": 0.4702380952380952,
+      "test_precision": 0.4804232804232804,
+      "test_recall": 0.47619047619047616,
+      "y_pred": [
+        2,
+        0,
+        1,
+        1,
+        2,
+        1,
+        0,
+        0,
+        2,
+        2,
+        0,
+        2,
+        0,
+        2,
+        1,
+        0,
+        0,
+        1,
+        0,
+        2,
+        0
+      ]
+    },
+    "XGBoost": {
+      "uses_scaler": false,
+      "best_params": {
+        "n_estimators": 200,
+        "max_depth": 3,
+        "learning_rate": 0.1,
+        "subsample": 0.8
+      },
+      "cv_accuracy": 0.33555555555555555,
+      "cv_accuracy_std": 0.12300757780531597,
+      "cv_f1w": 0.32716931216931217,
+      "cv_f1w_std": 0.1370215002121717,
+      "cv_f1m": 0.31227513227513226,
+      "cv_f1m_std": 0.13544659387891173,
+      "test_accuracy": 0.5238095238095238,
+      "test_f1w": 0.5289377289377291,
+      "test_f1m": 0.528937728937729,
+      "test_precision": 0.5376984126984127,
+      "test_recall": 0.5238095238095238,
+      "y_pred": [
+        2,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0,
+        2,
+        2,
+        2,
+        0,
+        1,
+        2,
+        0,
+        1,
+        0,
+        0,
+        2,
+        0,
+        2,
+        2
+      ]
+    }
+  }
+}

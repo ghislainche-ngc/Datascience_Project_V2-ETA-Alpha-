@@ -1,0 +1,12 @@
+# Exclude Data folder
+Data/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+
+# Environment
+.env
+*.egg-info/

@@ -1,0 +1,6 @@
+Model,Test Accuracy,Test F1 (weighted),Test F1 (macro),Test Precision (weighted),Test Recall (weighted),CV Accuracy (mean),CV Accuracy (std),CV F1w (mean),CV F1w (std),CV F1m (mean),CV F1m (std)
+Logistic Regression,0.4286,0.43,0.43,0.4345,0.4286,0.5044,0.1697,0.4685,0.1794,0.4712,0.1761
+Random Forest,0.4286,0.4184,0.4184,0.4352,0.4286,0.5055,0.0936,0.4635,0.1048,0.4537,0.0973
+XGBoost,0.5714,0.5702,0.5702,0.5734,0.5714,0.4923,0.1205,0.475,0.1206,0.4744,0.1216
+Majority Class Baseline,0.3333,0.1667,0.1667,0.1111,0.3333,,,,,,
+Stratified Random Baseline,0.3333,0.315,0.315,0.3111,0.3333,,,,,,
