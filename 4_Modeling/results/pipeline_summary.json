@@ -1,10 +1,10 @@
 {
-  "best_model": "XGBoost",
+  "best_model": "Random Forest",
   "best_params": {
     "n_estimators": 200,
-    "max_depth": 3,
-    "learning_rate": 0.1,
-    "subsample": 0.8
+    "max_depth": 5,
+    "min_samples_split": 2,
+    "min_samples_leaf": 1
   },
   "n_behavioral": 15,
   "n_demographic": 14,
@@ -25,6 +25,11 @@
     "use_Business",
     "use_Personal"
   ],
+  "split": {
+    "train": 48,
+    "val": 10,
+    "test": 11
+  },
   "classes": [
     "High",
     "Low",
@@ -32,37 +37,37 @@
   ],
   "baselines": {
     "Majority Class": {
-      "accuracy": 0.3333333333333333,
-      "f1_weighted": 0.16666666666666666,
-      "f1_macro": 0.16666666666666666
+      "accuracy": 0.2727272727272727,
+      "f1_weighted": 0.11688311688311687,
+      "f1_macro": 0.14285714285714285
     },
     "Stratified Random": {
-      "accuracy": 0.3333333333333333,
-      "f1_weighted": 0.3149824032176973,
-      "f1_macro": 0.3149824032176973
+      "accuracy": 0.2727272727272727,
+      "f1_weighted": 0.2756132756132756,
+      "f1_macro": 0.2804232804232804
     }
   },
   "impact": {
     "Logistic Regression": {
-      "before": 0.43,
-      "after": 0.4232,
-      "delta": -0.0068
+      "before": 0.1693,
+      "after": 0.2545,
+      "delta": 0.0852
     },
     "Random Forest": {
-      "before": 0.4184,
-      "after": 0.4702,
-      "delta": 0.0518
+      "before": 0.5476,
+      "after": 0.3611,
+      "delta": -0.1865
     },
     "XGBoost": {
-      "before": 0.5702,
-      "after": 0.5289,
-      "delta": -0.0413
+      "before": 0.4497,
+      "after": 0.3611,
+      "delta": -0.0886
     }
   },
   "error_analysis": {
-    "correct": 11,
-    "total": 21,
-    "pct": 52.4
+    "correct": 4,
+    "total": 11,
+    "pct": 36.4
   },
   "xgb_top10": {
     "pct_depot": 0.1035,
@@ -101,33 +106,26 @@
       "cv_f1w_std": 0.15828986872090878,
       "cv_f1m": 0.45476190476190465,
       "cv_f1m_std": 0.16481511206203497,
-      "test_accuracy": 0.42857142857142855,
-      "test_f1w": 0.4232064232064232,
-      "test_f1m": 0.4232064232064232,
-      "test_precision": 0.45454545454545453,
-      "test_recall": 0.42857142857142855,
+      "test_accuracy": 0.2727272727272727,
+      "test_f1w": 0.2413223140495868,
+      "test_f1m": 0.2545454545454546,
+      "test_precision": 0.24025974025974026,
+      "test_recall": 0.2727272727272727,
+      "val_accuracy": 0.6,
+      "val_f1w": 0.5619047619047619,
+      "val_f1m": 0.5873015873015873,
       "y_pred": [
-        2,
         0,
-        2,
-        1,
-        1,
-        1,
-        0,
-        1,
-        2,
         0,
         2,
         2,
-        1,
         2,
         1,
         2,
         2,
-        0,
         2,
         2,
-        2
+        1
       ]
     },
     "Random Forest": {
@@ -144,30 +142,23 @@
       "cv_f1w_std": 0.08916913077198697,
       "cv_f1m": 0.4403463203463203,
       "cv_f1m_std": 0.08799278450767486,
-      "test_accuracy": 0.47619047619047616,
-      "test_f1w": 0.47023809523809523,
-      "test_f1m": 0.4702380952380952,
-      "test_precision": 0.4804232804232804,
-      "test_recall": 0.47619047619047616,
+      "test_accuracy": 0.36363636363636365,
+      "test_f1w": 0.34848484848484845,
+      "test_f1m": 0.3611111111111111,
+      "test_precision": 0.38181818181818183,
+      "test_recall": 0.36363636363636365,
+      "val_accuracy": 0.6,
+      "val_f1w": 0.6,
+      "val_f1m": 0.5833333333333333,
       "y_pred": [
-        2,
         0,
         1,
-        1,
-        2,
-        1,
         0,
-        0,
-        2,
-        2,
-        0,
-        2,
         0,
         2,
         1,
-        0,
-        0,
-        1,
+        2,
+        2,
         0,
         2,
         0
@@ -187,32 +178,25 @@
       "cv_f1w_std": 0.1370215002121717,
       "cv_f1m": 0.31227513227513226,
       "cv_f1m_std": 0.13544659387891173,
-      "test_accuracy": 0.5238095238095238,
-      "test_f1w": 0.5289377289377291,
-      "test_f1m": 0.528937728937729,
-      "test_precision": 0.5376984126984127,
-      "test_recall": 0.5238095238095238,
+      "test_accuracy": 0.36363636363636365,
+      "test_f1w": 0.34848484848484845,
+      "test_f1m": 0.3611111111111111,
+      "test_precision": 0.38181818181818183,
+      "test_recall": 0.36363636363636365,
+      "val_accuracy": 0.7,
+      "val_f1w": 0.6952380952380952,
+      "val_f1m": 0.6984126984126983,
       "y_pred": [
-        2,
-        0,
-        1,
-        1,
-        1,
-        1,
         0,
         2,
-        2,
-        2,
         0,
+        0,
+        2,
         1,
         2,
-        0,
         1,
         0,
         0,
-        2,
-        0,
-        2,
         2
       ]
     }

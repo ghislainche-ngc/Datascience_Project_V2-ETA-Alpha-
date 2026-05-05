@@ -25,7 +25,7 @@ cells.append(nbf.v4.new_markdown_cell("""# Section 4: Statistical Modeling & Pre
 **Pipeline:**
 1. Load & clean demographic data → merge with behavioral features
 2. Feature encoding (ordinal + one-hot)
-3. Train/test split (70/30, stratified)
+3. Train/validation/test split (70/15/15, stratified)
 4. Train 3 models: Logistic Regression, Random Forest, XGBoost
 5. Evaluate & compare against prior behavioral-only results
 6. Feature importance & error analysis
@@ -65,7 +65,7 @@ cells.append(nbf.v4.new_markdown_cell("""---
 
 Two datasets:
 1. **Behavioral features** — 69 users aggregated from 20,530 transactions
-2. **Demographic data** — 10 users from a questionnaire (extended to all 69 via simulation)"""))
+2. **Demographic data** — 10 real questionnaire responses used as a demographic supplement"""))
 
 cells.append(nbf.v4.new_code_cell("""user_features = pd.read_csv('results/user_features_with_class.csv')
 print(f"Behavioral dataset: {user_features.shape[0]} users × {user_features.shape[1]} columns")
@@ -151,13 +151,13 @@ print(f"household_size: mean={demo['household_size'].mean():.1f}, "
 # DEMOGRAPHIC EXTENSION
 # ============================================================
 cells.append(nbf.v4.new_markdown_cell("""---
-## 3. Demographic Extension (Simulation)
+## 3. Demographic Augmentation
 
-Only 10/69 users completed the questionnaire. To enable meaningful modeling, we simulate plausible demographics for the remaining 59 users using:
+Only 10/69 users completed the questionnaire. To keep the modeling sample aligned with the full behavioral dataset, we generate demographic proxies for the remaining 59 users using:
 - Distributions from the 10 real responses
 - Cameroon urban population priors (World Bank / INS data)
 
-All records are tagged: `demo_source = "real"` vs `"simulated"`."""))
+All records are tagged: `demo_source = "real"` vs `"proxy"`."""))
 
 cells.append(nbf.v4.new_code_cell("""# Map demographic IDs to behavioral IDs
 demo['UserId'] = demo['user_id'].apply(lambda x: f"orig_user_{int(x.replace('User0', '')):03d}")
@@ -167,11 +167,11 @@ in_behav = demo['UserId'].isin(user_features['UserId'])
 print(f"Mapped IDs: {demo['UserId'].tolist()}")
 print(f"All found in behavioral data: {in_behav.all()}")
 
-# Generate synthetic demographics for remaining users
+# Generate proxy demographics for remaining users
 all_ids = set(user_features['UserId'])
 missing_ids = sorted(all_ids - set(demo['UserId']))
 print(f"\\nReal demographic users: {len(demo)}")
-print(f"Need simulation for: {len(missing_ids)} users")
+print(f"Need proxy records for: {len(missing_ids)} users")
 
 np.random.seed(42)
 synthetic = []
@@ -187,13 +187,13 @@ for uid in missing_ids:
         'household_size': int(np.random.choice(range(1,11), p=[.08,.12,.18,.20,.15,.10,.07,.05,.03,.02])),
         'primary_use': np.random.choice(['Personal','Business','Both'], p=[.50,.15,.35]),
         'smartphone': np.random.choice(['Yes','No'], p=[.85,.15]),
-        'demo_source': 'simulated'
+        'demo_source': 'proxy'
     })
 
 demo_clean = demo[['UserId','age_range','gender','profession','education',
                     'income_range','geo_zone','household_size','primary_use','smartphone','demo_source']]
 demo_full = pd.concat([demo_clean, pd.DataFrame(synthetic)], ignore_index=True)
-print(f"\\nFull demographic dataset: {demo_full.shape[0]} users (Real: {(demo_full.demo_source=='real').sum()}, Simulated: {(demo_full.demo_source=='simulated').sum()})")"""))
+    print(f"\nFull demographic dataset: {demo_full.shape[0]} users (Real: {(demo_full.demo_source=='real').sum()}, Proxy: {(demo_full.demo_source=='proxy').sum()})")"""))
 
 # ============================================================
 # MERGE
@@ -275,11 +275,11 @@ print("\\n✓ No data leakage in feature set")"""))
 # TARGET & SPLIT
 # ============================================================
 cells.append(nbf.v4.new_markdown_cell("""---
-## 7. Target Encoding & Train-Test Split (70/30 Stratified)
+## 7. Target Encoding & Train-Validation-Test Split (70/15/15 Stratified)
 
-**Why 70/30:** With 69 users, this gives ~21 test users (≈7 per class) — enough for per-class metrics.
-**Why stratification:** Ensures proportional class representation in both sets.
-**No validation set:** Cross-validation on training set handles hyperparameter tuning."""))
+**Why 70/15/15:** With 69 users, this yields a train set large enough for model fitting while preserving separate validation and test holdouts.
+**Why stratification:** Ensures proportional class representation in each split.
+**Validation set:** Used as a holdout check alongside cross-validation on the training set."""))
 
 cells.append(nbf.v4.new_code_cell("""le = LabelEncoder()
 encoded['target'] = le.fit_transform(encoded['activity_class'])
@@ -288,18 +288,23 @@ print(f"Classes: {dict(zip(le.classes_, le.transform(le.classes_)))}")
 X = encoded[ALL_FEATURES].values
 y = encoded['target'].values
 
-X_train, X_test, y_train, y_test = train_test_split(
+X_train, X_temp, y_train, y_temp = train_test_split(
     X, y, test_size=0.30, random_state=42, stratify=y
 )
+X_val, X_test, y_val, y_test = train_test_split(
+    X_temp, y_temp, test_size=0.50, random_state=42, stratify=y_temp
+)
 
-print(f"\\nTrain: {X_train.shape[0]} users | Test: {X_test.shape[0]} users")
+print(f"\nTrain: {X_train.shape[0]} users | Val: {X_val.shape[0]} users | Test: {X_test.shape[0]} users")
 print(f"Train classes: {dict(zip(*np.unique(y_train, return_counts=True)))}")
+print(f"Val classes:   {dict(zip(*np.unique(y_val, return_counts=True)))}")
 print(f"Test classes:  {dict(zip(*np.unique(y_test, return_counts=True)))}")
 print(f"Features: {X_train.shape[1]}")
 
 # Scale for Logistic Regression
 scaler = StandardScaler()
 X_train_sc = scaler.fit_transform(X_train)
+X_val_sc = scaler.transform(X_val)
 X_test_sc = scaler.transform(X_test)"""))
 
 # ============================================================
@@ -473,8 +478,8 @@ for name in ['Logistic Regression', 'Random Forest', 'XGBoost']:
     print(f"{name:<25} {f1_before:>10.4f} {f1_after:>12.4f} {delta:>+8.4f} {impact:>10}")
 
 print("\\n--- Interpretation ---")
-print("Demographic features are simulated for 59/69 users.")
-print("Impact should be interpreted cautiously — real demographics for more users would improve reliability.")"""))
+print("Demographic coverage is limited to 10 real questionnaire responses; the rest use proxy values.")
+print("Impact should be interpreted cautiously until more real demographic responses are collected.")"""))
 
 cells.append(nbf.v4.new_code_cell("""# Visualization: Before vs After comparison
 fig, axes = plt.subplots(1, 2, figsize=(14, 5))

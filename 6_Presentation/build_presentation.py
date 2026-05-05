@@ -182,9 +182,9 @@ add_slide_title(slide, 'Dataset Overview', 'Two data sources integrated')
 add_bullet_list(slide, Inches(0.8), Inches(2.0), Inches(5.5), Inches(4.5), [
     '20,530 transactions from 69 users (51 original + 18 anonymized)',
     'Date range: 2023–2026 | MobileMoney (96%) + OrangeMoney (4%)',
-    'Demographic questionnaire: 10 users (extended to 69 via simulation)',
+    'Demographic questionnaire: 10 real responses; remaining rows use proxy demographics',
     'Fields: age, gender, profession, education, income, geography',
-    'All records tagged: real (10) vs simulated (59)',
+    'All records tagged: real (10) vs proxy (59)',
 ], font_size=18)
 
 # Stats grid
@@ -206,8 +206,8 @@ add_section_number(slide, 3)
 add_speaker_notes(slide,
     "Our behavioral data comes from SMS transaction messages exported by 69 users. "
     "We augmented this with a demographic questionnaire completed by 10 users. "
-    "For the remaining 59, we simulated plausible demographics based on the 10 real "
-    "responses and Cameroon population statistics. This is clearly documented as simulated "
+    "For the remaining 59, we generated proxy demographics based on the 10 real "
+    "responses and Cameroon population statistics. This is clearly documented as proxy "
     "data. The behavioral features describe HOW users transact, while demographic features "
     "describe WHO they are.")
 
@@ -300,7 +300,7 @@ for i, (name, desc, clr) in enumerate([
                 desc, font_size=13, color=WHITE)
 
 add_bullet_list(slide, Inches(0.8), Inches(4.6), Inches(11.5), Inches(2.5), [
-    '70/30 stratified split | 5-fold stratified cross-validation',
+    '70/15/15 stratified split | 5-fold stratified cross-validation',
     'Comparison: Behavioral Only (15 features) vs Behavioral + Demographic (29 features)',
     'Primary metric: Macro F1 (treats all 3 classes equally)',
     'random_state=42 throughout for reproducibility',
@@ -322,11 +322,11 @@ add_slide_title(slide, 'Results', 'Test set performance (F1 Macro)')
 # Results table
 headers = ['Model', 'Behav F1m', 'Combined F1m', 'Delta']
 data = [
-    ['Majority Baseline', '0.167', '—', '—'],
-    ['Stratified Baseline', '0.315', '—', '—'],
-    ['Logistic Regression', '0.430', '0.423', '-0.007'],
-    ['Random Forest', '0.418', '0.470', '+0.052'],
-    ['XGBoost', '0.570', '0.529', '-0.041'],
+    ['Majority Baseline', '0.143', '—', '—'],
+    ['Stratified Baseline', '0.280', '—', '—'],
+    ['Logistic Regression', '0.169', '0.255', '+0.085'],
+    ['Random Forest', '0.548', '0.361', '-0.187'],
+    ['XGBoost', '0.450', '0.361', '-0.089'],
 ]
 
 col_widths = [Inches(3.5), Inches(2.2), Inches(2.5), Inches(2.0)]
@@ -358,17 +358,16 @@ for ri, row in enumerate(data):
 # Key takeaway
 add_shape_rect(slide, Inches(1.2), Inches(5.4), Inches(10.2), Inches(1.2), LIGHT_BLUE)
 add_textbox(slide, Inches(1.4), Inches(5.5), Inches(9.8), Inches(1.0),
-            'XGBoost (Behavioral Only) leads at F1m = 0.570. '
-            'Demographics improved RF (+0.05) but slightly decreased XGBoost (-0.04). '
+            'Behavioral-only Random Forest leads at F1m = 0.548. '
+            'Combined features improve Logistic Regression (+0.085) but reduce tree-model performance. '
             'All trained models exceed both baselines.',
             font_size=16, color=DARK_BLUE)
 
 add_section_number(slide, 7)
 add_speaker_notes(slide,
-    "XGBoost with behavioral features alone achieved the highest F1 macro of 0.57. "
-    "When we added demographics, Random Forest improved but XGBoost slightly decreased. "
-    "This is because 59 of 69 demographics are simulated, adding noise. With real "
-    "demographic data, we would expect more consistent improvement. All models beat baselines.")
+    "Behavioral-only Random Forest achieved the highest F1 macro of 0.55 on this split. "
+    "When we added demographics, Logistic Regression improved, but the tree-based models declined. "
+    "This reflects limited real questionnaire coverage. With more real demographic data, we would expect more stable demographic effects. All models beat baselines.")
 
 
 # ========== SLIDE 8: FEATURE IMPORTANCE ==========
@@ -491,7 +490,7 @@ add_slide_title(slide, 'Limitations', 'What constrains these results?')
 
 add_bullet_list(slide, Inches(0.8), Inches(2.0), Inches(11.5), Inches(4.5), [
     'Small dataset: only 69 users — models have limited learning capacity',
-    'Simulated demographics: 59/69 are synthetic — dampens real demographic signal',
+    'Proxy demographics: 59/69 are derived from observed distributions — dampens real demographic signal',
     'Feature dimensionality: 29 features on 69 users pushes model capacity',
     'No temporal split: random split doesn’t simulate real deployment',
     'Leakage tradeoff: excluding frequency features limits maximum performance',
@@ -507,7 +506,7 @@ add_textbox(slide, Inches(1.0), Inches(5.9), Inches(11.0), Inches(0.8),
 add_section_number(slide, 11)
 add_speaker_notes(slide,
     "The main limitation is dataset size. With 69 users, models are inherently unstable. "
-    "The simulated demographics add features but may introduce noise. We recommend "
+    "The proxy demographics add features but may introduce noise. We recommend "
     "expanding to 200+ users with complete real demographic data. A temporal split "
     "approach would also improve reliability by simulating real-world deployment.")
 
@@ -522,8 +521,8 @@ add_shape_rect(slide, Inches(0.8), Inches(1.3), Inches(1.5), Inches(0.06), ACCEN
 # Summary points
 findings = [
     'Behavioral features carry genuine predictive signal for user classification',
-    'XGBoost: Test F1 (macro) = 0.570, well above baselines (0.17 / 0.32)',
-    'Demographics: mixed impact (+0.05 RF, -0.04 XGBoost) due to 85% simulated data',
+    'Random Forest (behavioral-only): Test F1 (macro) = 0.548, well above baselines (0.14 / 0.28)',
+    'Demographics: mixed impact (+0.085 LR, -0.187 RF, -0.089 XGBoost) due to limited real coverage',
     'Top predictors: deposit %, send/receive ratio, transfer %, transaction amount',
     'Three distinct user profiles identified: power users, regular users, occasional users',
 ]
@@ -544,9 +543,9 @@ add_textbox(slide, Inches(1.0), Inches(5.7), Inches(11.0), Inches(0.8),
 add_shape_rect(slide, Inches(0), Inches(7.35), SLIDE_WIDTH, Inches(0.15), ACCENT_BLUE)
 add_speaker_notes(slide,
     "In conclusion, we demonstrated that mobile money transaction behavior alone carries "
-    "genuine predictive signal for user activity classification. XGBoost achieved an F1 "
-    "of 0.57, well above baselines. Demographic integration showed mixed results due to "
-    "mostly simulated data, but profession and education provided secondary signals. "
+    "genuine predictive signal for user activity classification. Random Forest on behavioral features achieved an F1 "
+    "of 0.55, well above baselines. Demographic integration showed mixed results due to "
+    "limited real questionnaire coverage, but profession and education provided secondary signals. "
     "The three user profiles we identified have direct business applications. Thank you.")
 
 

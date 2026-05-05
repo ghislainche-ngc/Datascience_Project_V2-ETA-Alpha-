@@ -113,7 +113,7 @@ Before merging, both datasets were compared across multiple dimensions:
 | Min | 0 XAF | 500 XAF |
 | Max | 825,575 XAF | 348,678 XAF |
 
-**Key difference**: The anonymized dataset has significantly higher transaction amounts (mean 110,932 vs 4,431 XAF). This reflects different user demographics — the anonymized users appear to be higher-volume transactors.
+**Key difference**: The anonymized dataset has significantly higher transaction amounts (mean 110,932 vs 4,431 XAF). This reflects differences in the participant groups and usage patterns; the anonymized users appear to be higher-volume transactors.
 
 ### Transaction Types
 

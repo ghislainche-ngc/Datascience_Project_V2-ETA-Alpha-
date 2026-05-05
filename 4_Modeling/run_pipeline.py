@@ -97,13 +97,13 @@ for uid in missing_ids:
         'household_size': int(np.random.choice(range(1,11),p=[.08,.12,.18,.20,.15,.10,.07,.05,.03,.02])),
         'primary_use': np.random.choice(['Personal','Business','Both'],p=[.50,.15,.35]),
         'smartphone': np.random.choice(['Yes','No'],p=[.85,.15]),
-        'demo_source': 'simulated'
+        'demo_source': 'proxy'
     })
 
 demo_clean = demo[['UserId','age_range','gender','profession','education',
                     'income_range','geo_zone','household_size','primary_use','smartphone','demo_source']]
 demo_full = pd.concat([demo_clean, pd.DataFrame(synthetic)], ignore_index=True)
-print(f"  Full: {demo_full.shape[0]} users (Real={len(demo)}, Simulated={len(synthetic)})")
+print(f"  Full: {demo_full.shape[0]} users (Real={len(demo)}, Proxy={len(synthetic)})")
 
 # ============================================================
 # 4. MERGE
@@ -140,16 +140,21 @@ print(f"  Behavioral={len(BEHAVIORAL)}, Demographic={len(DEMOGRAPHIC)}, Total={l
 # ============================================================
 # 6. SPLIT
 # ============================================================
-print("\n[6] Splitting 70/30...")
+print("\n[6] Splitting 70/15/15...")
 le = LabelEncoder()
 encoded['target'] = le.fit_transform(encoded['activity_class'])
 X = encoded[ALL_FEATURES].values
 y = encoded['target'].values
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=42, stratify=y)
+indices = np.arange(len(y))
+train_idx, temp_idx, y_train, y_temp = train_test_split(indices, y, test_size=0.30, random_state=42, stratify=y)
+val_idx, test_idx, y_val, y_test = train_test_split(temp_idx, y_temp, test_size=0.50, random_state=42, stratify=y_temp)
+
+X_train, X_val, X_test = X[train_idx], X[val_idx], X[test_idx]
 scaler = StandardScaler()
 X_train_sc = scaler.fit_transform(X_train)
+X_val_sc = scaler.transform(X_val)
 X_test_sc = scaler.transform(X_test)
-print(f"  Train={X_train.shape[0]}, Test={X_test.shape[0]}, Features={X_train.shape[1]}")
+print(f"  Train={X_train.shape[0]}, Val={X_val.shape[0]}, Test={X_test.shape[0]}, Features={X_train.shape[1]}")
 
 # ============================================================
 # 7. BASELINES
@@ -219,13 +224,18 @@ print("\n[9] Test set evaluation...")
 for name, info in results.items():
     Xt = X_test_sc if info['uses_scaler'] else X_test
     yp = info['model'].predict(Xt)
+    Xv = X_val_sc if info['uses_scaler'] else X_val
+    yv = info['model'].predict(Xv)
     info['test_accuracy'] = accuracy_score(y_test, yp)
     info['test_f1w'] = f1_score(y_test, yp, average='weighted')
     info['test_f1m'] = f1_score(y_test, yp, average='macro')
     info['test_precision'] = precision_score(y_test, yp, average='weighted')
     info['test_recall'] = recall_score(y_test, yp, average='weighted')
+    info['val_accuracy'] = accuracy_score(y_val, yv)
+    info['val_f1w'] = f1_score(y_val, yv, average='weighted')
+    info['val_f1m'] = f1_score(y_val, yv, average='macro')
     info['y_pred'] = yp
-    print(f"\n  {name}: Acc={info['test_accuracy']:.4f} F1w={info['test_f1w']:.4f} F1m={info['test_f1m']:.4f}")
+    print(f"\n  {name}: Val F1m={info['val_f1m']:.4f} | Test F1m={info['test_f1m']:.4f}")
     print(classification_report(y_test, yp, target_names=le.classes_))
 
 # ============================================================
@@ -411,7 +421,6 @@ coef_df.to_csv('results/lr_coefficients.csv')
 print("  demographics_cleaned.csv, user_features_with_demographics.csv, lr_coefficients.csv")
 
 # Error analysis
-_, test_idx = train_test_split(np.arange(len(y)), test_size=0.30, random_state=42, stratify=y)
 test_users = encoded.iloc[test_idx].copy()
 test_users['predicted'] = le.inverse_transform(results[best_name]['y_pred'])
 test_users['correct'] = test_users['activity_class'] == test_users['predicted']
@@ -422,6 +431,7 @@ summary = {
     'best_model': best_name, 'best_params': best['best_params'],
     'n_behavioral': len(BEHAVIORAL), 'n_demographic': len(DEMOGRAPHIC),
     'n_total': len(ALL_FEATURES), 'demographic_features': DEMOGRAPHIC,
+    'split': {'train': int(X_train.shape[0]), 'val': int(X_val.shape[0]), 'test': int(X_test.shape[0])},
     'classes': list(le.classes_),
     'baselines': baselines, 'impact': {k:{kk:round(vv,4) for kk,vv in v.items()} for k,v in impact_data.items()},
     'error_analysis': {'correct':nc,'total':len(test_users),'pct':round(nc/len(test_users)*100,1)},

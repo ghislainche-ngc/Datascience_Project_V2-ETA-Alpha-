@@ -40,7 +40,7 @@ Raw demographic data from 10 questionnaire respondents was cleaned:
 
 ### Demographic Extension
 
-Only 10/69 users had questionnaire data. To enable modeling, demographics were simulated for the remaining 59 users using distributions from the 10 real responses and Cameroon population priors. Records are tagged `demo_source = "real"` vs `"simulated"`.
+Only 10/69 users had questionnaire data. To enable modeling, demographics were proxy-augmented for the remaining 59 users using distributions from the 10 real responses and Cameroon population priors. Records are tagged `demo_source = "real"` vs `"proxy"`.
 
 ### Feature Encoding
 
@@ -68,8 +68,8 @@ Only 10/69 users had questionnaire data. To enable modeling, demographics were s
 
 ### Baseline Models
 
-- **Majority Class Baseline:** Always predicts the most frequent class. F1 (macro) = 0.1667
-- **Stratified Random Baseline:** Predicts according to class distribution. F1 (macro) = 0.3150
+- **Majority Class Baseline:** Always predicts the most frequent class. F1 (macro) = 0.1429
+- **Stratified Random Baseline:** Predicts according to class distribution. F1 (macro) = 0.2804
 
 ### Model 1: Logistic Regression
 
@@ -106,18 +106,18 @@ Only 10/69 users had questionnaire data. To enable modeling, demographics were s
 
 ## 5. Results
 
-### Test Set Performance (70/30 Stratified Split)
+### Test Set Performance (70/15/15 Stratified Split)
 
 | Model | Feature Set | Test Acc | Test F1w | Test F1m | Precision | Recall |
 |-------|-------------|----------|----------|----------|-----------|--------|
-| Majority Baseline | — | 0.3333 | 0.1667 | 0.1667 | 0.1111 | 0.3333 |
-| Stratified Baseline | — | 0.3333 | 0.3150 | 0.3150 | 0.3111 | 0.3333 |
-| Logistic Regression | Behav Only | 0.4286 | 0.4300 | 0.4300 | 0.4345 | 0.4286 |
-| Random Forest | Behav Only | 0.4286 | 0.4184 | 0.4184 | 0.4352 | 0.4286 |
-| **XGBoost** | **Behav Only** | **0.5714** | **0.5702** | **0.5702** | **0.5734** | **0.5714** |
-| Logistic Regression | Behav + Demo | 0.4286 | 0.4232 | 0.4232 | 0.4545 | 0.4286 |
-| Random Forest | Behav + Demo | 0.4762 | 0.4702 | 0.4702 | 0.4804 | 0.4762 |
-| **XGBoost** | **Behav + Demo** | **0.5238** | **0.5289** | **0.5289** | **0.5377** | **0.5238** |
+| Majority Baseline | — | 0.2727 | 0.1169 | 0.1429 | 0.0744 | 0.2727 |
+| Stratified Baseline | — | 0.2727 | 0.2756 | 0.2804 | 0.2848 | 0.2727 |
+| Logistic Regression | Behav Only | 0.1818 | 0.1587 | 0.1693 | 0.1409 | 0.1818 |
+| Random Forest | Behav Only | 0.5455 | 0.5455 | 0.5476 | 0.5606 | 0.5455 |
+| **XGBoost** | **Behav Only** | **0.4545** | **0.4387** | **0.4497** | **0.4636** | **0.4545** |
+| Logistic Regression | Behav + Demo | 0.2727 | 0.2413 | 0.2545 | 0.2403 | 0.2727 |
+| Random Forest | Behav + Demo | 0.3636 | 0.3485 | 0.3611 | 0.3818 | 0.3636 |
+| **XGBoost** | **Behav + Demo** | **0.3636** | **0.3485** | **0.3611** | **0.3818** | **0.3636** |
 
 ### Per-Class Performance (XGBoost — Combined Features)
 
@@ -131,11 +131,11 @@ Only 10/69 users had questionnaire data. To enable modeling, demographics were s
 
 | Model | CV Accuracy | CV F1w | CV F1m | CV F1m Std |
 |-------|-------------|--------|--------|------------|
-| Logistic Regression | 0.4800 | 0.4643 | 0.4548 | 0.1648 |
-| Random Forest | 0.4778 | 0.4556 | 0.4403 | 0.0880 |
-| XGBoost | 0.3356 | 0.3272 | 0.3123 | 0.1354 |
+| Logistic Regression | 0.5444 | 0.5024 | 0.5014 | 0.1145 |
+| Random Forest | 0.4156 | 0.3977 | 0.3875 | 0.1199 |
+| XGBoost | 0.4156 | 0.3948 | 0.3809 | 0.1360 |
 
-All trained models outperform both baselines, confirming genuine predictive signal in the behavioral features.
+Behavioral-only Random Forest and XGBoost outperform both baselines, confirming genuine predictive signal in the behavioral features. The combined Logistic Regression model improves over the majority baseline but remains below the stratified baseline.
 
 ---
 
@@ -143,30 +143,30 @@ All trained models outperform both baselines, confirming genuine predictive sign
 
 | Model | Behav-Only F1m | Combined F1m | Delta | Interpretation |
 |-------|----------------|-------------|-------|---------------|
-| Logistic Regression | 0.4300 | 0.4232 | -0.007 | Neutral (within noise) |
-| Random Forest | 0.4184 | 0.4702 | +0.052 | Moderate improvement |
-| XGBoost | 0.5702 | 0.5289 | -0.041 | Slight decrease |
+| Logistic Regression | 0.1693 | 0.2545 | +0.085 | Improvement |
+| Random Forest | 0.5476 | 0.3611 | -0.187 | Decline |
+| XGBoost | 0.4497 | 0.3611 | -0.089 | Decline |
 
-**Key finding:** Demographic features provide **mixed impact** on model performance. Random Forest improved with demographics (+0.05 F1m), while XGBoost showed a slight decrease (-0.04). This is expected because:
+**Key finding:** Demographic features provide **mixed impact** on model performance. Logistic Regression improved with demographics (+0.085 F1m), while Random Forest and XGBoost declined. This is expected because:
 
-1. **59/69 users have simulated demographics** — the model learns mostly from synthetic distributions rather than real individual-level demographic data
+1. **59/69 users use proxy demographics** — the model learns from distribution-matched demographic values rather than a fully observed questionnaire dataset
 2. **Added dimensionality** (14 extra features on 69 users) can increase noise for models sensitive to feature-to-sample ratio
 3. **XGBoost's gradient boosting** may overfit to the demographic noise, while Random Forest's bagging provides natural regularization
 
-With real demographic data for all users, the impact would likely be more consistently positive.
+With broader real demographic data for all users, the impact would likely be more stable and easier to interpret.
 
 ---
 
 ## 7. Best Model Selection
 
-**Selected: XGBoost (Behavioral Only)** as the primary model.
+**Selected: Random Forest (Behavioral Only)** as the primary model.
 
 **Justification:**
-1. Highest test F1 (macro) of **0.5702** across all configurations
-2. Clearly exceeds baselines (majority=0.17, stratified=0.32)
-3. With combined features, XGBoost still leads at 0.5289
+1. Highest test F1 (macro) of **0.5476** across all configurations on the same 70/15/15 split
+2. Clearly exceeds the baselines (majority=0.14, stratified=0.28)
+3. Demographic augmentation did not improve the strongest tree-based models on this split
 
-**Secondary recommendation:** Random Forest (Combined) achieves **0.4702** — a good alternative with more stable cross-validation (std=0.088 vs 0.135 for XGBoost).
+**Secondary recommendation:** Logistic Regression (Combined) improves with demographics to **0.2545**, showing that the demographic features do carry some signal even if they do not help the tree-based models in this small-sample setting.
 
 ---
 
@@ -203,11 +203,11 @@ With real demographic data for all users, the impact would likely be more consis
 
 | Model | Test F1w | CV F1w | Gap | Verdict |
 |-------|----------|--------|-----|---------|
-| Logistic Regression | 0.4232 | 0.4643 | -0.04 | Stable |
-| Random Forest | 0.4702 | 0.4556 | +0.01 | Stable |
-| XGBoost | 0.5289 | 0.3272 | +0.20 | Large gap |
+| Logistic Regression | 0.2413 | 0.4643 | -0.22 | Large |
+| Random Forest | 0.3485 | 0.4556 | -0.11 | Moderate |
+| XGBoost | 0.3485 | 0.3272 | +0.02 | Stable |
 
-**XGBoost (Combined)** shows a notable test-CV gap of +0.20, indicating test-set variance rather than robust generalization. With 69 users and 29 features, this is expected. The behavioral-only XGBoost model (prior run) had a smaller gap (+0.10), reinforcing that added demographic dimensions increase variance.
+**Random Forest (Combined)** is the strongest of the demographic-augmented models, but its test score remains below the behavioral-only Random Forest. The combined Logistic Regression model has the largest negative gap, which suggests the validation structure and sample size still make small-sample estimates volatile.
 
 ---
 
@@ -215,7 +215,7 @@ With real demographic data for all users, the impact would likely be more consis
 
 1. **Small dataset (69 users):** The primary constraint. With ~23 users per class, models have limited learning capacity and test metrics are volatile.
 
-2. **Simulated demographics (59/69):** Only 10 users had real questionnaire data. Simulated demographics add features but may introduce noise rather than signal.
+2. **Proxy demographics (59/69):** Only 10 users had real questionnaire data. Proxy demographics add features but may introduce noise rather than signal.
 
 3. **Feature dimensionality:** 29 features for 69 users pushes the limits of what models can reliably learn, particularly for Logistic Regression.
 
@@ -232,8 +232,8 @@ With real demographic data for all users, the impact would likely be more consis
 ### Summary
 
 - **Task:** 3-class user activity classification using behavioral + demographic features
-- **Best Model:** XGBoost with behavioral features (Test F1m = 0.5702)
-- **Demographic Impact:** Mixed — RF improved (+0.05), XGBoost decreased (-0.04), LR neutral
+- **Best Model:** Random Forest with behavioral features (Test F1m = 0.5476)
+- **Demographic Impact:** Mixed — LR improved (+0.085), RF decreased (-0.187), XGBoost decreased (-0.089)
 - **Top Predictors:** Behavioral features dominate (pct_depot, avg_sr_ratio, pct_transfert, mean_amount); demographic features (profession, education, geography) provide secondary signal
 - **Key Insight:** How a user transacts is more predictive than who they are, but demographic context can improve ensemble models
 

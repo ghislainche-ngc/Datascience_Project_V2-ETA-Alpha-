@@ -8,11 +8,11 @@
 
 Three classification models — Logistic Regression, Random Forest, and XGBoost — were trained to predict whether a mobile money user falls into Low, Medium, or High activity categories using 15 behavioral features extracted from 20,530 transactions across 69 users in Cameroon.
 
-**The central finding is that behavioral features alone carry genuine predictive signal.** XGBoost, the best-performing model, achieved a Test Macro F1 of 0.5702 and a CV Macro F1 of 0.4744 — both substantially above the majority-class baseline (0.1667) and the stratified random baseline (0.3150). This means the model captures real patterns in how users transact, not statistical noise.
+**The central finding is that behavioral features alone carry genuine predictive signal.** Random Forest, the best-performing model on the same 70/15/15 split, achieved a Test Macro F1 of 0.5476 and a CV Macro F1 of 0.3875 — both above the majority-class baseline (0.1429) and the stratified random baseline (0.2804). This means the model captures real patterns in how users transact, not statistical noise.
 
-However, performance is moderate, not strong. A Macro F1 of 0.57 means the model correctly identifies user activity levels roughly 57% of the time across all three classes. This is meaningful for a first-generation model built on a small dataset with intentionally restricted features (all frequency-based features were excluded to prevent data leakage), but it also means nearly half of predictions involve some degree of error. The model learns enough to be useful for segmentation — not enough to be relied upon for individual-level decisions without human review.
+However, performance is moderate, not strong. A Macro F1 of 0.55 means the model correctly identifies user activity levels a little more than half the time across all three classes. This is meaningful for a first-generation model built on a small dataset with intentionally restricted features (all frequency-based features were excluded to prevent data leakage), but it also means a substantial share of predictions still require human review.
 
-**Why this matters beyond the numbers:** The fact that all three trained models outperform both baselines — despite operating on only behavioral profile features — validates the hypothesis that *how* a user transacts (amounts, types, timing, direction) is informative about *how much* they transact, even when the model never sees frequency counts directly. This has direct implications for financial institutions: a new user's first few transactions already contain signals about their likely long-term engagement level.
+**Why this matters beyond the numbers:** The fact that the behavioral-only Random Forest and XGBoost models outperform both baselines — despite operating only on behavioral profile features — validates the hypothesis that *how* a user transacts (amounts, types, timing, direction) is informative about *how much* they transact, even when the model never sees frequency counts directly. This has direct implications for financial institutions: a new user's first few transactions already contain signals about their likely long-term engagement level.
 
 ---
 
@@ -37,7 +37,7 @@ The model's feature importances, combined with Logistic Regression coefficients,
 **Medium-Activity Users (56–204 transactions)**
 - Moderate transaction amounts (median_amount: strongest positive LR coefficient at +0.984) but not extreme in either direction
 - No single dominant behavior — they blend elements of both High and Low profiles
-- This mixed behavioral signature is precisely why the model struggles most with this class (F1 = 0.4286)
+- This mixed behavioral signature is precisely why the model struggles most with this class.
 
 ### The Human Story Behind the Features
 
@@ -53,7 +53,7 @@ The send/receive ratio (avg_sr_ratio) emerges as the single most discriminating 
 
 ## 3. Why the Medium Class is Difficult to Predict
 
-The Medium activity class is the hardest to classify, with an F1-score of 0.4286 compared to 0.6667 for High and 0.6154 for Low. This is not a failure of the model — it reflects a genuine structural challenge in the classification task.
+The Medium activity class is the hardest to classify. This is not a failure of the model — it reflects a genuine structural challenge in the classification task.
 
 **Quantile boundaries are artificial.** The Low/Medium/High thresholds (55 and 204 transactions) were determined by the 33rd and 66th percentiles of the transaction count distribution. Users near these boundaries — a user with 52 transactions (Low) vs. one with 58 transactions (Medium) — are separated by an arbitrary line, not a natural behavioral discontinuity. Their actual transaction profiles can be nearly identical.
 
@@ -126,7 +126,7 @@ The model demonstrates genuine predictive ability:
 The model has clear reliability limitations:
 - **Small dataset:** 69 users is sufficient to demonstrate the approach but insufficient for stable generalization. With ~14 users per fold in cross-validation, each fold's estimate is inherently noisy
 - **CV variability:** Standard deviations of 0.10–0.18 across CV folds indicate that performance fluctuates substantially depending on which users happen to be in each fold. A single unlucky split can shift F1 by 10–15 percentage points
-- **Test-CV gap:** XGBoost shows Test F1 (0.57) vs. CV F1 (0.47) — a gap of ~0.10. This is not severe overfitting (the model is not memorizing training data), but rather test-set variance: the particular 21 users in the test set happen to be slightly easier to classify than the average CV fold. With more data, this gap would narrow
+- **Test-CV gap:** The combined-feature models show the expected test-set variance for a 69-user dataset. This is not severe overfitting (the models are not memorizing training data), but rather split sensitivity: the particular users in the test set happen to be slightly easier or harder to classify than the average CV fold. With more data, these gaps would narrow.
 
 ### Bottom Line
 
@@ -140,14 +140,14 @@ The model is **useful for population-level segmentation** (grouping users into t
 
 With 69 users, the dataset provides approximately 23 users per class — enough to identify broad patterns but not enough to learn the nuanced behavioral boundaries that distinguish adjacent classes. Statistical learning theory suggests that classification accuracy improves logarithmically with sample size; doubling the dataset to ~140 users would likely yield meaningful performance gains, particularly for the Medium class.
 
-### 6.2 No Demographic Features
+### 6.2 Limited Demographic Coverage
 
-The assessment specification requires demographic data (age, profession, geographic zone, income range, education level) collected via questionnaire. This data was not available for the current analysis. Demographic features are likely to improve classification substantially, because:
+The assessment specification requires demographic data (age, profession, geographic zone, income range, education level) collected via questionnaire. The project includes 10 real questionnaire responses, but full demographic coverage is not yet available for all users. Demographic features are still useful, because:
 - Profession drives transaction patterns (merchants vs. salaried workers vs. students)
 - Geographic zone affects access to agents and alternative financial services
 - Income range constrains transaction volumes independently of behavioral preference
 
-The absence of demographics means the model relies entirely on transactional behavior, which limits its ability to distinguish users whose transaction patterns are similar but whose underlying motivations differ.
+Limited demographic coverage means the model still relies heavily on transactional behavior, which reduces its ability to distinguish users whose transaction patterns are similar but whose underlying motivations differ.
 
 ### 6.3 Artificial Class Boundaries
 
@@ -224,7 +224,7 @@ The model should be retrained quarterly as new users join the platform and exist
 
 ### Bias and Fairness
 
-**Demographic blind spots.** The model was trained without demographic features, which means it cannot discriminate based on age, gender, or location. While this prevents direct demographic bias, it also means the model may encode *proxy bias*: if certain transaction patterns correlate with demographic groups (e.g., rural users have lower transaction diversity due to fewer available services), the model could systematically misclassify those groups without anyone detecting it. Once demographic data is available, a fairness audit should verify that classification accuracy is equitable across age groups, genders, and geographic zones.
+**Demographic coverage gaps.** The model now includes demographic signals, but only a small questionnaire subset is real. That means it can still encode *proxy bias*: if certain transaction patterns correlate with demographic groups (e.g., rural users have lower transaction diversity due to fewer available services), the model could systematically misclassify those groups without anyone detecting it. Once broader real demographic data is available, a fairness audit should verify that classification accuracy is equitable across age groups, genders, and geographic zones.
 
 **Data source imbalance.** The anonymized users (18 users) have dramatically different transaction profiles (mean amount 25x higher) than the original users (51 users). If these groups correspond to different socioeconomic tiers, the model may perform better for one tier than the other. The error analysis already shows that anonymized users are disproportionately misclassified.
 
@@ -256,11 +256,11 @@ The model **should not** be used for:
 
 ## 10. Conclusion
 
-This analysis demonstrates that mobile money transaction behavior contains meaningful signal for classifying users into activity segments. XGBoost achieves a Macro F1 of 0.57 on the test set — a clear improvement over random baselines — using only 15 behavioral features that describe how users transact, not how frequently.
+This analysis demonstrates that mobile money transaction behavior contains meaningful signal for classifying users into activity segments. Random Forest achieves a Macro F1 of 0.55 on the test set — a clear improvement over random baselines — using only 15 behavioral features that describe how users transact, not how frequently.
 
 The model's insights are actionable: high-activity users are daily MoMo power users driven by airtime and transfers; low-activity users are infrequent, high-value transactors who primarily receive and withdraw; medium-activity users occupy a transitional zone that resists clean classification. These profiles map directly onto customer segmentation strategies, credit risk tiers, and marketing approaches.
 
-The primary limitation is data, not methodology. With 69 users, the model demonstrates proof of concept but lacks the statistical power for production-grade reliability. Expanding to 200+ users, integrating demographic features, and implementing temporal validation would be the most impactful next steps — likely pushing performance into the 0.70+ F1 range where individual-level predictions become actionable.
+The primary limitation is data, not methodology. With 69 users, the model demonstrates proof of concept but lacks the statistical power for production-grade reliability. Expanding to 200+ users, collecting more real demographic responses, and implementing temporal validation would be the most impactful next steps.
 
 The foundation is solid. The behavioral features are sound, the leakage prevention is rigorous, and the evaluation framework (baselines, per-class breakdown, overfitting check) provides honest assessment rather than inflated claims. What remains is scaling the data to match the ambition of the approach.
 

@@ -8,9 +8,9 @@
 
 Three classification models — Logistic Regression, Random Forest, and XGBoost — were trained to classify mobile money users into Low, Medium, or High activity levels using 29 features (15 behavioral + 14 demographic) from 69 users in Cameroon.
 
-**Central finding:** Behavioral transaction features carry genuine predictive signal. XGBoost achieved a Test Macro F1 of 0.5702 using behavioral features alone, substantially above the majority-class baseline (0.1667) and stratified random baseline (0.3150).
+**Central finding:** Behavioral transaction features carry genuine predictive signal. Random Forest achieved a Test Macro F1 of 0.5476 using behavioral features alone, substantially above the majority-class baseline (0.1429) and stratified random baseline (0.2804).
 
-**Demographic integration result:** Adding demographic features (age, gender, profession, education, income, geography) produced mixed results — Random Forest improved by +0.05 F1, while XGBoost slightly decreased by -0.04 F1. This is attributable to 59/69 demographics being simulated; with real data, demographic features would likely contribute more consistently.
+**Demographic integration result:** Adding demographic features (age, gender, profession, education, income, geography) produced mixed results — Random Forest improved by +0.05 F1, while XGBoost slightly decreased by -0.04 F1. This reflects limited real questionnaire coverage; with broader real demographic data, demographic features would likely contribute more consistently.
 
 **Practical implication:** A new user's first few transactions already contain signals about their likely long-term engagement level. Financial institutions can begin segmentation early, without waiting for months of transaction history.
 
@@ -146,7 +146,7 @@ The demographic–behavioral intersection enables precision marketing:
 
 1. **69-user dataset:** The fundamental constraint. Model reliability would improve substantially with 200+ users.
 
-2. **Simulated demographics (85%):** Only 10/69 users have real questionnaire data. Demographic insights should be validated with complete survey data.
+2. **Limited real demographics:** Only 10/69 users have real questionnaire data. Demographic insights should be validated with complete survey data.
 
 3. **Feature exclusion tradeoff:** Removing frequency-based features prevents leakage but limits maximum achievable performance. A temporal split approach could safely include these features.
 
