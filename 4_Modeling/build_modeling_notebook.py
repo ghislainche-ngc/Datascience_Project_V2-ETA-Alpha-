@@ -40,7 +40,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import train_test_split, StratifiedKFold, GridSearchCV, cross_validate
-from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.preprocessing import RobustScaler, LabelEncoder
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import (accuracy_score, precision_score, recall_score, f1_score,
@@ -302,7 +302,7 @@ print(f"Test classes:  {dict(zip(*np.unique(y_test, return_counts=True)))}")
 print(f"Features: {X_train.shape[1]}")
 
 # Scale for Logistic Regression
-scaler = StandardScaler()
+scaler = RobustScaler()
 X_train_sc = scaler.fit_transform(X_train)
 X_val_sc = scaler.transform(X_val)
 X_test_sc = scaler.transform(X_test)"""))

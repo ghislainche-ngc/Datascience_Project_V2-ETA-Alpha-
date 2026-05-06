@@ -74,7 +74,7 @@ Only 10/69 users had questionnaire data. To enable modeling, demographics were p
 ### Model 1: Logistic Regression
 
 - **Configuration:** C=1, solver=lbfgs, class_weight=balanced, max_iter=1000
-- **Scaling:** StandardScaler applied
+- **Scaling:** RobustScaler applied
 - **Strengths:** Interpretable coefficients per class
 
 ### Model 2: Random Forest

@@ -9,7 +9,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import train_test_split, StratifiedKFold, cross_validate
-from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.preprocessing import RobustScaler, LabelEncoder
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import (accuracy_score, precision_score, recall_score, f1_score,
@@ -150,7 +150,7 @@ train_idx, temp_idx, y_train, y_temp = train_test_split(indices, y, test_size=0.
 val_idx, test_idx, y_val, y_test = train_test_split(temp_idx, y_temp, test_size=0.50, random_state=42, stratify=y_temp)
 
 X_train, X_val, X_test = X[train_idx], X[val_idx], X[test_idx]
-scaler = StandardScaler()
+scaler = RobustScaler()
 X_train_sc = scaler.fit_transform(X_train)
 X_val_sc = scaler.transform(X_val)
 X_test_sc = scaler.transform(X_test)
